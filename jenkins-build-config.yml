@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  name: rci-components-public
+  namespace:
+  labels:
+    name: rci-components-public
+spec:
+  triggers:
+    -
+      type: GitHub
+      github:
+        secret: secret101
+    -
+      type: Generic
+      generic:
+        secret: secret101
+  runPolicy: Serial
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/RogersCommunications/rci-components-public'
+      ref: dev
+  strategy:
+    type: JenkinsPipeline
+    jenkinsPipelineStrategy:
+      jenkinsfile: |-
+        pipeline {
+            agent {
+              node {
+                label 'nodejs8' // spin up a node.js slave pod to run this build on
+              }
+            }
+            stages {
+                stage('Preparation') {
+                    steps {
+                        sh 'npm config ls'
+                        sh 'echo $PATH'
+                        git branch: 'dev', url: 'https://github.com/RogersCommunications/rci-components-public.git'
+                        sh 'rm -rf node_modules'
+                        sh 'pwd'
+                        sh 'npm install'
+                    }
+                }
+                stage('Unit Test') {
+                    steps {
+                        //  sh 'npm run test:ci'
+                        echo "Pretending test is running"
+                    }
+                }
+                stage('Build') {
+                    steps {
+                        sh 'npm run build'       // ./dist
+                        sh 'npm run build:demo'  // demo/dist
+                    }
+                }
+                
+                stage('Create Image') {
+                    steps {
+                       sh 'ls'
+                       sh 'oc start-build rci-components-s2i --from-dir=demo --follow'
+                    }
+                }
+            }
+        }
+  output:
+  resources:
+  postCommit:
