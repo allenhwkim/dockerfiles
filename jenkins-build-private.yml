@@ -5,20 +5,6 @@ metadata:
   namespace:
   labels:
     name: oneview-components
-oauthConfig:
-  identityProviders:
-  - name: github 
-    challenge: false 
-    login: true 
-    mappingMethod: claim 
-    provider:
-      apiVersion: v1
-      kind: GitHubIdentityProvider
-      clientID: 3f8608eb9a9b9a8285e8 
-      clientSecret: a8904f719014d85bd8a3f986df6bf32dc5bec868 
-      organizations: 
-      - RogersCommunications
-spec:
   // triggers:
   //   -
   //     type: GitHub
@@ -29,11 +15,13 @@ spec:
   //     generic:
   //        secret: secret101
   runPolicy: Serial
-  // source:
-  //   type: Git
-  //   git:
-  //     uri: 'https://github.com/RogersCommunications/rci-components-public'
-  //     ref: dev
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/RogersCommunications/oneview-components'
+    secrets:
+      - secret:
+        name: allen-password
   strategy:
     type: JenkinsPipeline
     jenkinsPipelineStrategy:
@@ -49,7 +37,7 @@ spec:
                     steps {
                         sh 'npm config ls'
                         sh 'echo $PATH'
-                        git branch: 'dev', url: 'https://github.com/RogersCommunications/rci-components-public.git'
+                        git branch: 'dev', url: 'https://github.com/RogersCommunications/oneview-components.git'
                         sh 'rm -rf node_modules'
                         sh 'pwd'
                         sh 'npm install'
@@ -63,15 +51,17 @@ spec:
                 }
                 stage('Build') {
                     steps {
-                        sh 'npm run build'       // ./dist
-                        sh 'npm run build:demo'  // demo/dist
+                        // sh 'npm run build'       // ./dist
+                        // sh 'npm run build:demo'  // demo/dist
+                        echo "Pretending build is running"
                     }
                 }
                 
                 stage('Create Image') {
                     steps {
-                       sh 'ls'
-                       sh 'oc start-build rci-components-s2i --from-dir=demo --follow'
+                       // sh 'ls'
+                       // sh 'oc start-build rci-components-s2i --from-dir=demo --follow'
+                       echo "Pretending create image is running"
                     }
                 }
             }
