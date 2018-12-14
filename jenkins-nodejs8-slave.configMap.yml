@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: List
+metadata: {}
+resourceVersion: ""
+selfLink: ""
+items:
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    namespace: allen-jenkins       # project name
+    name: jenkins-nodejs8-slave    # this config map name
+    labels:
+      role: jenkins-slave          # must be "jenkins-slave"
+  data:
+    nodejs8: |-
+      <org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+        <inheritFrom></inheritFrom>
+        <name>nodejs8</name>
+        <instanceCap>2147483647</instanceCap>
+        <idleMinutes>0</idleMinutes>
+        <label>nodejs8</label>
+        <serviceAccount>jenkins</serviceAccount>                       <!-- always jenkins -->
+        <nodeSelector></nodeSelector>
+        <volumes/>
+        <containers>
+          <org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+            <name>jnlp</name>
+            <image>openshift/jenkins-agent-nodejs-8-centos7</image>    <!-- image repo. -->
+            <privileged>false</privileged>
+            <alwaysPullImage>true</alwaysPullImage>                    <!-- ???? -->
+            <workingDir>/tmp</workingDir>
+            <command></command>
+            <args>${computer.jnlpmac} ${computer.name}</args>
+            <ttyEnabled>false</ttyEnabled>
+            <resourceRequestCpu></resourceRequestCpu>
+            <resourceRequestMemory></resourceRequestMemory>
+            <resourceLimitCpu></resourceLimitCpu>
+            <resourceLimitMemory></resourceLimitMemory>
+            <envVars/>
+          </org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+        </containers>
+        <envVars/>
+        <annotations/>
+        <imagePullSecrets/>
+        <nodeProperties/>
+      </org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+
