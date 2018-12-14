@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  name: oneview-components
+  namespace:
+  labels:
+    name: oneview-components
+oauthConfig:
+  identityProviders:
+  - name: github 
+    challenge: false 
+    login: true 
+    mappingMethod: claim 
+    provider:
+      apiVersion: v1
+      kind: GitHubIdentityProvider
+      clientID: 3f8608eb9a9b9a8285e8 
+      clientSecret: a8904f719014d85bd8a3f986df6bf32dc5bec868 
+      organizations: 
+      - RogersCommunications
+spec:
+  // triggers:
+  //   -
+  //     type: GitHub
+  //     github:
+  //       secret: secret101
+  //   -
+  //     type: Generic
+  //     generic:
+  //        secret: secret101
+  runPolicy: Serial
+  // source:
+  //   type: Git
+  //   git:
+  //     uri: 'https://github.com/RogersCommunications/rci-components-public'
+  //     ref: dev
+  strategy:
+    type: JenkinsPipeline
+    jenkinsPipelineStrategy:
+      jenkinsfile: |-
+        pipeline {
+            agent {
+              node {
+                label 'nodejs8' // spin up a node.js slave pod to run this build on
+              }
+            }
+            stages {
+                stage('Preparation') {
+                    steps {
+                        sh 'npm config ls'
+                        sh 'echo $PATH'
+                        git branch: 'dev', url: 'https://github.com/RogersCommunications/rci-components-public.git'
+                        sh 'rm -rf node_modules'
+                        sh 'pwd'
+                        sh 'npm install'
+                    }
+                }
+                stage('Unit Test') {
+                    steps {
+                        //  sh 'npm run test:ci'
+                        echo "Pretending test is running"
+                    }
+                }
+                stage('Build') {
+                    steps {
+                        sh 'npm run build'       // ./dist
+                        sh 'npm run build:demo'  // demo/dist
+                    }
+                }
+                
+                stage('Create Image') {
+                    steps {
+                       sh 'ls'
+                       sh 'oc start-build rci-components-s2i --from-dir=demo --follow'
+                    }
+                }
+            }
+        }
+  output:
+  resources:
+  postCommit:
